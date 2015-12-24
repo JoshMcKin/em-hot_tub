@@ -3,19 +3,36 @@ describe EventMachine::HotTub::Pool do
 
   around(:each) do |example|
     EM.synchrony do
-      @url = HotTub::Server.url
-
       example.run
-
       EM.stop
     end
   end
 
+  describe "Mutex" do
+    it "should be EM" do
+      pool = EM::HotTub::Pool.new {MocClient.new}
+      expect(pool.instance_variable_get(:@mutex)).to be_a(EM::Synchrony::Thread::Mutex)
+    end
+  end
+
+  describe "ConditionVariable" do
+    it "should be EM" do
+      pool = EM::HotTub::Pool.new {MocClient.new}
+      expect(pool.instance_variable_get(:@cond)).to be_a(EM::Synchrony::Thread::ConditionVariable)
+    end
+  end
+
+  describe "Reaper" do
+    it "should be a fiber" do
+      pool = EM::HotTub::Pool.new {MocClient.new}
+      expect(pool.reaper).to be_a(Fiber)
+    end
+  end
 
   context 'EM:HTTPRequest' do
     it "single request" do
       status = []
-      c = EM::HotTub::Pool.new {EM::HttpRequest.new(@url)}
+      c = EM::HotTub::Pool.new {EM::HttpRequest.new(HotTub::Server.url)}
       c.run { |conn| status << conn.head(:keepalive => true).response_header.status}
       c.run { |conn| status << conn.ahead(:keepalive => true).response_header.status}
       c.run { |conn| status << conn.head(:keepalive => true).response_header.status}
@@ -26,16 +43,14 @@ describe EventMachine::HotTub::Pool do
 
   context 'pool of fibers' do
     it "should work" do
-      pool = EM::HotTub::Pool.new({:size => 5, :max_size => 5}) { EM::HttpRequest.new(@url) }
-      failed = false
+      pool = EM::HotTub::Pool.new() { EM::HttpRequest.new(HotTub::Server.url) }
       fibers = []
+      results  = []
       30.times.each do |i|
         fiber = Fiber.new {
           pool.run do |connection|
             response = connection.get(:keepalive => true)
-            #puts "#{i}-#{response.response.length}"
-            code = response.response_header.status
-            failed = true unless code == 200
+            results  << response.response_header.status
           end
         }
         fiber.resume
@@ -52,8 +67,8 @@ describe EventMachine::HotTub::Pool do
           EM::Synchrony.sleep(0.01)
         end
       end
-      expect(pool.instance_variable_get(:@pool).length).to be >= 5 #make sure work got done
-      expect(failed).to eql(false) # Make sure our requests worked
+      expect(results.length).to eql(30) # make sure all responses are present
+      expect(results.uniq).to eql([200])
       pool.shutdown!
     end
   end

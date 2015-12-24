@@ -1,5 +1,5 @@
 class MocMixinPool
-  include HotTub::Reaper::Mixin
+  include EventMachine::HotTub::Reaper::Mixin
 end
 
 class MocPool < MocMixinPool
@@ -8,6 +8,7 @@ class MocPool < MocMixinPool
   def initialize
     @reaped = false
     @lets_reap = false
+    @kill_reaper = false
   end
 
   def reap!
@@ -19,5 +20,6 @@ class MocReaperPool < MocPool
   def initialize
     super
     @reaper = EM::HotTub::Reaper.spawn(self)
+    @kill_reaper = false
   end
 end

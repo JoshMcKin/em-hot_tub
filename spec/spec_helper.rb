@@ -1,21 +1,19 @@
 require 'rubygems'
 require 'rspec'
 require 'rspec/autotest'
-require 'em/em-hot_tub'
+require 'em/hot_tub'
 require 'em-http-request'
-require 'em-synchrony'
-require 'em-synchrony/em-http'
+require "em-synchrony"
+require "em-synchrony/em-http"
 require 'helpers/moc_pool'
 require 'helpers/moc_client'
 require 'helpers/server'
+require 'logger'
 
-class StubLogger
-  def method_missing(method, *args)
-    #we don't care
-  end
-end
 
-HotTub.logger = StubLogger.new
+# EM::HotTub.logger = Logger.new(STDOUT)
+# EM::HotTub.trace = true
+
 RSpec.configure do |config|
 
   config.expect_with :rspec do |expectations|

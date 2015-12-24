@@ -1,10 +1,15 @@
+require "em/hot_tub/reaper"
 module EventMachine::HotTub
+
   class Pool < HotTub::Pool
-    def initialize(opts={},&new_client)
-      super
-      @mutex  = EM::Synchrony::Thread::Mutex.new
-      @cond   = EM::Synchrony::Thread::ConditionVariable.new #StubConditionVariable.new
-      @reaper = EM::HotTub::Reaper.spawn(self) unless opts[:no_reaper]
+
+    include EventMachine::HotTub::Reaper::Mixin
+
+    def initialize(opts={},&client_block)
+      super(opts, &client_block)
+      @mutex = EM::Synchrony::Thread::Mutex.new
+      @cond  = EM::Synchrony::Thread::ConditionVariable.new
+      @kill_reaper = false
     end
   end
 end

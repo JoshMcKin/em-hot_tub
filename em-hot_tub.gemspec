@@ -18,17 +18,14 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "hot_tub"
+  spec.add_runtime_dependency "hot_tub", "~> 0.5.1"
   spec.add_runtime_dependency "em-synchrony"
 
-  spec.add_development_dependency "bundler", "~> 1.7"
-  spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec"
   spec.add_development_dependency "rspec-autotest"
   spec.add_development_dependency "autotest"
   spec.add_development_dependency "em-http-request"
   spec.add_development_dependency "sinatra"
   spec.add_development_dependency "puma", "~> 2.0.0"
-  spec.add_development_dependency "eventmachine_httpserver"
 
 end
