@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'uri'
 require 'time'
 describe EM::HotTub::Sessions do
-  
+
   around(:each) do |example|
     EM.synchrony do
       example.run
@@ -80,38 +80,25 @@ describe EM::HotTub::Sessions do
       session.add(url) { EM::HttpRequest.new(url, {:max_size => 10}) }
       session.add(url2) { EM::HttpRequest.new(url2, {:max_size => 10}) }
 
-
       fibers = []
       results  = []
-      #kill_time = (Time.now + (60 * 11))
       30.times.each do
         fiber = Fiber.new do
-          #while kill_time > Time.now
-            session.run(url)  { |clnt| results << clnt.get.response_header.status }
-            session.run(url2) { |clnt| results << clnt.get.response_header.status }
-          #end
+          session.run(url)  { |clnt| results << clnt.get.response_header.status }
+          session.run(url2) { |clnt| results << clnt.get.response_header.status }
         end
         fiber.resume
         fibers << fiber
       end
 
-      loop do
-        working = false
-
-        fibers.each do |f|
-          working = true if f.alive?
-        end
-
-        if working
-          EM::Synchrony.sleep(0.01)
-        else
-          break
-        end
+      # Wait until work is done
+      while fibers.detect(&:alive?)
+        EM::Synchrony.sleep(0.01)
       end
+
       expect(results.length).to eql(60) # make sure all responses are present
       expect(results.uniq).to eql([200,0]) # Em http request gives 0 status randomly
       expect(session.instance_variable_get(:@_sessions).keys.length).to eql(2) # make sure sessions were created
-      session.shutdown!
     end
   end
 end

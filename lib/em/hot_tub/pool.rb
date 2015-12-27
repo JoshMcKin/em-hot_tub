@@ -10,6 +10,7 @@ module EventMachine::HotTub
       @mutex = EM::Synchrony::Thread::Mutex.new
       @cond  = EM::Synchrony::Thread::ConditionVariable.new
       @kill_reaper = false
+      EM.add_shutdown_hook {shutdown!} unless @sessions_key
     end
   end
 end

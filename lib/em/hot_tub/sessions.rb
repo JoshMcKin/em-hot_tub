@@ -9,6 +9,7 @@ module EventMachine::HotTub
       super opts
       @mutex = EM::Synchrony::Thread::Mutex.new
       @kill_reaper = false
+      EM.add_shutdown_hook {shutdown!}
     end
   end
 end

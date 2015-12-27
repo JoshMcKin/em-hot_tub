@@ -37,7 +37,6 @@ describe EventMachine::HotTub::Pool do
       c.run { |conn| status << conn.ahead(:keepalive => true).response_header.status}
       c.run { |conn| status << conn.head(:keepalive => true).response_header.status}
       expect(status).to eql([200,0,200])
-      c.shutdown!
     end
   end
 
@@ -56,20 +55,12 @@ describe EventMachine::HotTub::Pool do
         fiber.resume
         fibers << fiber
       end
-      loop do
-        done = true
-        fibers.each do |f|
-          done = false if f.alive?
-        end
-        if done
-          break
-        else
-          EM::Synchrony.sleep(0.01)
-        end
+      # Wait until work is done
+      while fibers.detect(&:alive?)
+        EM::Synchrony.sleep(0.01)
       end
       expect(results.length).to eql(30) # make sure all responses are present
       expect(results.uniq).to eql([200])
-      pool.shutdown!
     end
   end
 end
