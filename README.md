@@ -7,7 +7,7 @@ Eventmachine aware [HotTub](https://github.com/JoshMcKin/hot_tub)
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'em-hot_tub', :require => 'em/hot_tub'
+gem 'em-hot_tub', :require => 'em-hot_tub'
 ```
 
 And then execute:
