@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'rspec'
 require 'rspec/autotest'
-require 'em/hot_tub'
+require 'em-hot_tub'
 require 'em-http-request'
 require "em-synchrony"
 require "em-synchrony/em-http"
